@@ -2,7 +2,7 @@
   "tasks": [
     {
       "name": "run",
-      "cmd": "cd nvim-zig && zig build run && nvim -c 'lua vim.defer_fn(function() vim.cmd(\"so yeet.lua\") end, 200)'",
+      "cmd": "cd nvim-zig && zig build run && nvim -c 'lua vim.defer_fn(function() vim.cmd(\"so run.lua\") end, 200)'",
       "window": {
         "name": "zook",
         "close": true
@@ -10,7 +10,7 @@
     },
     {
       "name": "debug",
-      "cmd": "cd nvim-zig && zig build run && nvim -c 'lua vim.defer_fn(function() vim.cmd(\"so yeet.lua\") end, 200)'",
+      "cmd": "cd nvim-zig && zig build run && nvim -c 'lua vim.defer_fn(function() vim.cmd(\"so run.lua\") end, 200)'",
       "window": {
         "name": "zookd",
         "close": false
