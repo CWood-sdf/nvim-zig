@@ -1,0 +1,14 @@
+[package]
+name = "nvim-oxi-luajit"
+description = "Rust bindings to LuaJIT for nvim-oxi"
+version.workspace = true
+edition.workspace = true
+repository.workspace = true
+documentation.workspace = true
+license.workspace = true
+
+[dependencies]
+thiserror = { workspace = true }
+
+[lints]
+workspace = true

@@ -1,0 +1,95 @@
+[workspace]
+members = ["crates/*", "examples/*"]
+exclude = ["tests"]
+resolver = "2"
+
+[workspace.package]
+version = "0.5.1"
+edition = "2021"
+authors = ["Riccardo Mazzarini <me@noib3.dev>"]
+rust-version = "1.62"
+description = "Rust bindings to all things Neovim"
+documentation = "https://docs.rs/nvim-oxi"
+readme = "./README.md"
+repository = "https://github.com/noib3/nvim-oxi"
+license = "MIT"
+keywords = ["bindings", "neovim", "nvim"]
+
+[workspace.dependencies]
+api = { path = "./crates/api", package = "nvim-oxi-api" }
+libuv = { path = "./crates/libuv", package = "nvim-oxi-libuv" }
+luajit = { path = "./crates/luajit", package = "nvim-oxi-luajit" }
+macros = { path = "./crates/macros", package = "nvim-oxi-macros" }
+thiserror = "1.0"
+types = { path = "./crates/types", package = "nvim-oxi-types" }
+
+[workspace.lints.clippy]
+mixed_attributes_style = "allow"
+
+[package]
+name = "nvim-oxi"
+description.workspace = true
+version.workspace = true
+edition.workspace = true
+repository.workspace = true
+documentation.workspace = true
+license.workspace = true
+keywords.workspace = true
+readme.workspace = true
+
+[package.metadata.docs.rs]
+features = ["neovim-nightly", "libuv", "mlua", "test", "__vendored_luajit"]
+rustdoc-args = ["--cfg", "docsrs"]
+
+[features]
+neovim-0-9 = ["api/neovim-0-9"]
+neovim-0-10 = ["api/neovim-0-10"]
+neovim-nightly = ["api/neovim-nightly"]
+
+libuv = ["dep:libuv"]
+mlua = ["dep:mlua"]
+test = ["macros/test", "miniserde"]
+test-terminator = ["test", "libuv", "macros/test-terminator"]
+__vendored_luajit = ["mlua/vendored"]
+
+[dependencies]
+api = { workspace = true }
+libuv = { workspace = true, optional = true }
+luajit = { workspace = true }
+macros = { workspace = true, features = ["plugin"] }
+miniserde = { version = "0.1", optional = true }
+mlua = { version = "0.9", features = ["luajit"], optional = true }
+thiserror = { workspace = true }
+types = { workspace = true, features = ["serde"] }
+
+[dev-dependencies]
+mlua = { version = "0.9", features = ["luajit", "module"] }
+serde = { version = "1.0", features = ["derive"] }
+tokio = { version = "1.0", features = ["full"] }
+
+[[example]]
+name = "api"
+path = "./examples/api.rs"
+crate-type = ["cdylib"]
+
+[[example]]
+name = "calc"
+path = "./examples/calc.rs"
+crate-type = ["cdylib"]
+
+[[example]]
+name = "libuv"
+path = "./examples/libuv.rs"
+crate-type = ["cdylib"]
+required-features = ["libuv"]
+
+[[example]]
+name = "mechanic"
+path = "./examples/mechanic.rs"
+crate-type = ["cdylib"]
+
+[[example]]
+name = "mlua"
+path = "./examples/mlua.rs"
+crate-type = ["cdylib"]
+required-features = ["mlua"]
