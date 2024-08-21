@@ -1,0 +1,3 @@
+#!/bin/bash
+
+clang test.c -lc -shared -o a.so -g

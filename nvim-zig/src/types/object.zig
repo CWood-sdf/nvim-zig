@@ -1,15 +1,15 @@
 pub const ObjectKind = enum(c_int) {
     Nil = 0,
-    Boolean,
-    Integer,
-    Float,
-    String,
-    Array,
-    Dictionary,
-    LuaRef,
-    Buffer,
-    Window,
-    TabPage,
+    Boolean = 1,
+    Integer = 2,
+    Float = 3,
+    String = 4,
+    Array = 5,
+    Dictionary = 6,
+    LuaRef = 7,
+    Buffer = 8,
+    Window = 9,
+    TabPage = 10,
 };
 pub const OptionalKeys = u64;
 pub const Boolean = bool;
@@ -17,15 +17,15 @@ pub const Integer = i64;
 pub const Float = f64;
 pub const LuaRef = c_int;
 pub const String = extern struct {
-    data: [*]const u8,
-    size: usize,
+    data: [*]allowzero const u8,
+    size: u64,
 };
 
 pub fn KVec(T: type) type {
     return extern struct {
-        size: usize,
-        capacity: usize,
-        items: [*]T,
+        size: u64,
+        capacity: u64,
+        items: [*]allowzero T,
     };
 }
 pub const KeyValuePair = extern struct {
@@ -45,12 +45,12 @@ pub const ObjectData = extern union {
     luaref: LuaRef,
 };
 pub const Object = extern struct {
-    ty: ObjectKind,
+    type: ObjectKind,
     data: ObjectData,
 };
 
 pub fn nilObject() Object {
-    return Object{ .ty = ObjectKind.Nil, .data = .{
+    return Object{ .type = ObjectKind.Nil, .data = .{
         .integer = 0,
     } };
 }

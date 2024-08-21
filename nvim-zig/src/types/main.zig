@@ -3,12 +3,12 @@ pub const ErrorType = enum(c_int) {
     Exception,
     Validation,
 };
-pub const Error = struct {
+pub const Error = extern struct {
     type: ErrorType,
     msg: [*]const u8,
 };
 
-pub const Arena = struct {
+pub const Arena = extern struct {
     current_block: [*]const u8,
     pos: usize,
     size: usize,

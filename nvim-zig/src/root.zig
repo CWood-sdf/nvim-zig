@@ -6,12 +6,24 @@ const consts = @import("constants.zig");
 const types = @import("types/object.zig");
 const mainTp = @import("types/main.zig");
 const std = @import("std");
+const opt = @import("opts/option.zig");
+const asdf = @cImport({
+    @cInclude("asdf.h");
+});
 
 export fn cool() callconv(.C) bool {
-    if (@sizeOf(mainTp.Error) != 0x10) {
-        @compileLog(std.fmt.comptimePrint("{} {}", .{ @sizeOf(w.WindowOpts), 0x120 }));
-        // @compileError();
-    }
+    // if (@sizeOf(types.Object) != 32) {
+    //     @compileLog(std.fmt.comptimePrint("{}", .{@sizeOf(types.Object)}));
+    //     // @compileError("expected 24");
+    // }
+    // if (@sizeOf(types.String) != 16) {
+    //     @compileLog(std.fmt.comptimePrint("{}", .{@sizeOf(types.String)}));
+    //     // @compileError("expected 16");
+    // }
+    // if (@sizeOf(opt.OptionOpts) != 48) {
+    //     // @compileLog(std.fmt.comptimePrint("{} {}", .{ @sizeOf(types.Object), 0x120 }));
+    //     @compileError("expected 30");
+    // }
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     const alloc = gpa.allocator();
     defer _ = gpa.deinit();
@@ -35,23 +47,11 @@ export fn cool() callconv(.C) bool {
         .size = rel.len,
         .data = rel.ptr,
     };
-    const r: []const u8 = "";
-    const ancStr = types.String{
-        .size = r.len,
-        .data = r.ptr,
-    };
-
-    const asdfasdf: Arr = Arr.init(alloc);
-    defer asdfasdf.deinit();
-    const bufPos = types.Array{
-        .size = 0,
-        .capacity = asdfasdf.items.len,
-        .items = @ptrCast(asdfasdf.items.ptr),
-    };
 
     const mask = (1 << w.mask_win_config_col) | (1 << w.mask_win_config_row) | (1 << w.mask_win_config_relative) | (1 << w.mask_win_config_width) | (1 << w.mask_win_config_height);
 
-    const winOpts = w.WindowOpts{ .bufpos = bufPos, .anchor = ancStr, .split = ancStr, .title_pos = ancStr, .footer_pos = ancStr, .style = ancStr, .mask = mask, .col = 10, .relative = relStr, .row = 10, .width = 40, .height = 10 };
+    const winOpts = w.WindowOpts{ .mask = mask, .col = 10, .relative = relStr, .row = 10, .width = 40, .height = 10 };
+
     var writer = log.writer();
     // {
     //     writer.print("win title enum: {}\n", .{@intFromEnum(winOpts..ty)}) catch return false;
@@ -61,6 +61,9 @@ export fn cool() callconv(.C) bool {
         writer.print("err before win: {}\n", .{@intFromEnum(err.type)}) catch return false;
     }
     const win = winApi.nvim_open_win(buf, true, &winOpts, &err);
+
+    // winApi.nvim_set_option_value(consts.LUA_INTERNAL_CALL, name, value, &opts, &err);
+    // winApi.nvim_set_option_value(consts.LUA_INTERNAL_CALL, name, value, &opts, &err);
     {
         writer.print("win ret: {}\n", .{win}) catch return false;
     }
@@ -91,7 +94,7 @@ export fn cool() callconv(.C) bool {
             .size = str.len,
             .data = str.ptr,
         };
-        arr.append(types.Object{ .ty = types.ObjectKind.String, .data = types.ObjectData{
+        arr.append(types.Object{ .type = types.ObjectKind.String, .data = types.ObjectData{
             .string = Str,
         } }) catch return false;
     }
@@ -101,7 +104,7 @@ export fn cool() callconv(.C) bool {
             .size = str.len,
             .data = str.ptr,
         };
-        arr.append(types.Object{ .ty = types.ObjectKind.String, .data = types.ObjectData{
+        arr.append(types.Object{ .type = types.ObjectKind.String, .data = types.ObjectData{
             .string = Str,
         } }) catch return false;
     }
@@ -129,10 +132,77 @@ export fn cool() callconv(.C) bool {
         .current_block = str2.ptr,
     };
 
-    bufApi.nvim_buf_set_lines(consts.LUA_INTERNAL_CALL, buf, 0, -1, true, actualArr, &arena, &err);
-    {
-        const emsg: [*:0]const u8 = @ptrCast(err.msg);
-        writer.print("{s}\n", .{emsg}) catch return false;
+    const optMask = (1 << opt.mask_win);
+
+    // const scopeName: []const u8 = "local";
+    //
+    // const scope = types.String{
+    //     .data = scopeName.ptr,
+    //     .size = scopeName.len - 1,
+    // };
+    var opts = asdf.struct_OptionOpts{
+        .mask = optMask,
+        .win = win,
+        // .scope = scope,
+    };
+
+    // in c: mask: 4, win: 1002
+
+    const optionName: []const u8 = "signcolumn";
+
+    const name = asdf.struct_String{
+        .data = optionName.ptr,
+        .size = optionName.len,
+    };
+    // in c: data: 'signcolumn', size: 10
+
+    const valueName: []const u8 = "yes:8";
+    const valueT = asdf.struct_String{
+        .data = valueName.ptr,
+        .size = valueName.len,
+    };
+    // in c: data: 'no', size: 2
+
+    const value = asdf.struct_Object{
+        .kind = asdf.String,
+        .data = .{ .string = valueT },
+    };
+    // in c: kind: 4
+    //
+    // const namePtr: [*]const u8 = @ptrCast(&name);
+    // for (0..@sizeOf(@TypeOf(name))) |i| {
+    //     writer.print("name+{}: {b:8}\n", .{ i, namePtr[i] }) catch return false;
+    // }
+    // const valuePtr: [*]const u8 = @ptrCast(&value);
+    // for (0..@sizeOf(@TypeOf(value))) |i| {
+    //     writer.print("value+{}: {b:8}\n", .{ i, valuePtr[i] }) catch return false;
+    // }
+    const errPtr: [*]const u8 = @ptrCast(&err);
+    for (0..@sizeOf(@TypeOf(err))) |i| {
+        writer.print("err+{}: {b:8}\n", .{ i, errPtr[i] }) catch return false;
     }
+
+    var err2 = mainTp.Error{
+        .type = @enumFromInt(-1),
+        .msg = str3.ptr,
+    };
+    const castedName: *const types.String = @ptrCast(&name);
+    const castedValue: *const types.Object = @ptrCast(&value);
+    winApi.nvim_set_option_value(0, castedName.*, castedValue.*, @ptrCast(&opts), @ptrCast(&err2));
+    // asdf.nvim_set_option_value(0, name, value, &opts, &err2);
+    const dp: *const u8 = @ptrCast(name.data);
+    writer.print("d1: {?}\n", .{dp.*}) catch return false;
+    writer.print("opts: {?}\n", .{opts}) catch return false;
+    writer.print("opts.name: {s}\n", .{optionName}) catch return false;
+    writer.print("win: {?}\n", .{win}) catch return false;
+    writer.print("name: {?}\n", .{name}) catch return false;
+    writer.print("name.data: {s}\n", .{valueName}) catch return false;
+    writer.print("value: {?}\n", .{value}) catch return false;
+    writer.print("value.data: {?}\n", .{value.data}) catch return false;
+    {
+        writer.print("err after: {}\n", .{@intFromEnum(err.type)}) catch return false;
+    }
+    writer.print("reached end", .{}) catch return false;
+    bufApi.nvim_buf_set_lines(consts.LUA_INTERNAL_CALL, buf, 0, -1, true, actualArr, &arena, &err);
     return true;
 }
