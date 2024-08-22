@@ -7,9 +7,9 @@ const types = @import("types/object.zig");
 const mainTp = @import("types/main.zig");
 const std = @import("std");
 const opt = @import("opts/option.zig");
-const asdf = @cImport({
-    @cInclude("asdf.h");
-});
+// const asdf = @cImport({
+//     @cInclude("asdf.h");
+// });
 
 export fn cool() callconv(.C) bool {
     // if (@sizeOf(types.Object) != 32) {
@@ -134,75 +134,65 @@ export fn cool() callconv(.C) bool {
 
     const optMask = (1 << opt.mask_win);
 
-    // const scopeName: []const u8 = "local";
-    //
-    // const scope = types.String{
-    //     .data = scopeName.ptr,
-    //     .size = scopeName.len - 1,
-    // };
-    var opts = asdf.struct_OptionOpts{
+    var opts = opt.OptionOpts{
         .mask = optMask,
         .win = win,
-        // .scope = scope,
     };
-
-    // in c: mask: 4, win: 1002
 
     const optionName: []const u8 = "signcolumn";
 
-    const name = asdf.struct_String{
+    const name = types.String{
         .data = optionName.ptr,
         .size = optionName.len,
     };
-    // in c: data: 'signcolumn', size: 10
 
-    const valueName: []const u8 = "yes:8";
-    const valueT = asdf.struct_String{
+    const valueName: []const u8 = "no";
+    const valueT = types.String{
         .data = valueName.ptr,
         .size = valueName.len,
     };
-    // in c: data: 'no', size: 2
 
-    const value = asdf.struct_Object{
-        .kind = asdf.String,
+    const value = types.Object{
+        .type = .String,
         .data = .{ .string = valueT },
     };
-    // in c: kind: 4
-    //
-    // const namePtr: [*]const u8 = @ptrCast(&name);
-    // for (0..@sizeOf(@TypeOf(name))) |i| {
-    //     writer.print("name+{}: {b:8}\n", .{ i, namePtr[i] }) catch return false;
-    // }
-    // const valuePtr: [*]const u8 = @ptrCast(&value);
-    // for (0..@sizeOf(@TypeOf(value))) |i| {
-    //     writer.print("value+{}: {b:8}\n", .{ i, valuePtr[i] }) catch return false;
-    // }
-    const errPtr: [*]const u8 = @ptrCast(&err);
-    for (0..@sizeOf(@TypeOf(err))) |i| {
-        writer.print("err+{}: {b:8}\n", .{ i, errPtr[i] }) catch return false;
-    }
 
-    var err2 = mainTp.Error{
-        .type = @enumFromInt(-1),
-        .msg = str3.ptr,
+    winApi.nvim_set_option_value(0, name, value, &opts, &err);
+
+    // opts.mask = (1 << opt.mask_buf);
+    // opts.buf = buf;
+    const optionName2: []const u8 = "number";
+
+    const name2 = types.String{
+        .data = optionName2.ptr,
+        .size = optionName2.len,
     };
-    const castedName: *const types.String = @ptrCast(&name);
-    const castedValue: *const types.Object = @ptrCast(&value);
-    winApi.nvim_set_option_value(0, castedName.*, castedValue.*, @ptrCast(&opts), @ptrCast(&err2));
-    // asdf.nvim_set_option_value(0, name, value, &opts, &err2);
-    const dp: *const u8 = @ptrCast(name.data);
-    writer.print("d1: {?}\n", .{dp.*}) catch return false;
-    writer.print("opts: {?}\n", .{opts}) catch return false;
-    writer.print("opts.name: {s}\n", .{optionName}) catch return false;
-    writer.print("win: {?}\n", .{win}) catch return false;
-    writer.print("name: {?}\n", .{name}) catch return false;
-    writer.print("name.data: {s}\n", .{valueName}) catch return false;
-    writer.print("value: {?}\n", .{value}) catch return false;
-    writer.print("value.data: {?}\n", .{value.data}) catch return false;
-    {
-        writer.print("err after: {}\n", .{@intFromEnum(err.type)}) catch return false;
-    }
-    writer.print("reached end", .{}) catch return false;
+
+    const value2 = types.Object{
+        .type = .Boolean,
+        .data = .{ .boolean = false },
+    };
+    winApi.nvim_set_option_value(0, name2, value2, &opts, &err);
+    writer.print("err: {}\n", .{@intFromEnum(err.type)}) catch return false;
+    const errMsg: [*:0]const u8 = @ptrCast(err.msg);
+    writer.print("err msg: {s}\n", .{errMsg}) catch return false;
+
+    const optionName3: []const u8 = "relativenumber";
+
+    const name3 = types.String{
+        .data = optionName3.ptr,
+        .size = optionName3.len,
+    };
+
+    const value3 = types.Object{
+        .type = .Boolean,
+        .data = .{ .boolean = false },
+    };
+    winApi.nvim_set_option_value(0, name3, value3, &opts, &err);
+    writer.print("err: {}\n", .{@intFromEnum(err.type)}) catch return false;
+    const errMsg2: [*:0]const u8 = @ptrCast(err.msg);
+    writer.print("err msg: {s}\n", .{errMsg2}) catch return false;
     bufApi.nvim_buf_set_lines(consts.LUA_INTERNAL_CALL, buf, 0, -1, true, actualArr, &arena, &err);
+    writer.print("done\n", .{}) catch return false;
     return true;
 }
